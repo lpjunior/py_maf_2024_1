@@ -58,6 +58,7 @@ def delete_user(conn, id):
     conn.commit()
 
 
+"""
 def main():
     database = r"users.db"
     conn = create_connection(database)
@@ -75,3 +76,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+"""
