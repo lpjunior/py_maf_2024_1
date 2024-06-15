@@ -1,0 +1,16 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Bem-vindo ao Django</title>
+</head>
+<body>
+    <h1>Bem-vindo ao Django</h1>
+    <form method="post" action="{% url 'saudacao' %}">
+        {% csrf_token %} <!-- Cross-Site Request Forgery -->
+        <label for="nome">Digite seu nome:</label>
+        <input type="text" id="nome" name="nome" required>
+        <button type="submit">Enviar</button>
+    </form>
+</body>
+</html>
