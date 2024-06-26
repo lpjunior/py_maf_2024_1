@@ -1,0 +1,14 @@
+﻿{% extends 'usuarios/base.html' %}
+{% block title %}Registro{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <h1>Registro</h1>
+        <form method="post">
+            {% csrf_token %}
+            {{ form }}
+            <button class="mt-2 btn btn-dark" type="submit">Registrar</button>
+        </form>
+        <a class="btn btn-link" href="{% url 'login' %}">Login</a>
+    </div>
+{% endblock %}

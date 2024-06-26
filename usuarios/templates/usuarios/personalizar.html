@@ -1,0 +1,11 @@
+﻿{% extends 'usuarios/base.html' %}
+{% block title %}Personalizar{% endblock %}
+
+{% block content %}
+    <h1>Personalizar</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.cor_preferida }}
+        <button class="btn btn-dark" type="submit">Salvar</button>
+    </form>
+{% endblock %}

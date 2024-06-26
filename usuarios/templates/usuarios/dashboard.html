@@ -1,0 +1,15 @@
+﻿{% extends 'usuarios/base.html' %}
+{% block title %}Dashboard{% endblock %}
+
+{% block extra_css %}
+        body {
+            background-color: {{ cor_preferida }};
+        }
+{% endblock %}
+
+{% block content %}
+    <h1>Bem-vindo, {{ usuario.nome }}</h1>
+    <p>Sua cor preferida é: {{cor_preferida}}</p>
+    <a class="btn btn-dark" href="{% url 'personalizar' %}">Personalizar</a>
+    <a class="btn btn-danger" href="{% url 'logout' %}">Logout</a>
+{% endblock %}
