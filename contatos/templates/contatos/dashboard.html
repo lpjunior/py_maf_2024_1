@@ -1,0 +1,16 @@
+﻿{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+    <h1>Bem-vind, {{ usuario.nome }}</h1>
+    <a href="{% url 'adicionar_contato' %}" class="btn btn-primary">Adicionar Contato</a>
+    <a href="{% url 'logout' %}" class="btn btn-secondary">Logout</a>
+
+    <h2>Meus Contatos</h2>
+    <ul>
+        {% for contato in contatos %}
+            <li>{{ contato.nome }} - {{ contato.telefone }} - {{ contato.email }} - {{ contato.endereco }}</li>
+        {% endfor %}
+    </ul>
+{% endblock %}

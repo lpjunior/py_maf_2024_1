@@ -1,4 +1,7 @@
+import hashlib
+
 from django import forms
+from django.contrib.auth.hashers import check_password
 
 from contatos.models import Usuario, Contato
 
@@ -30,30 +33,27 @@ class ContatoForm(BootstrapModelForm):
         }
 
 
-class LoginForm(BootstrapModelForm):
-    class Meta:
-        model = Usuario
-        fields = ['email', 'senha']
-        widgets = {
-            'senha': forms.PasswordInput(),
-        }
+class LoginForm(forms.Form):
+    email = forms.EmailField(widget=forms.EmailInput(attrs={
+        'class': 'form-control', 'placeholder': 'exemplo@dominio.com'
+    }))
+    senha = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control', 'placeholder': 'Sua senha'
+    }))
 
-        def __init__(self, *args, **kwargs):
-            super().__init__(*args, **kwargs)
-            self.fields['email'].widget.attrs['placeholder'] = 'exemplo@dominio.com'
-            self.fields['senha'].widget.attrs['placeholder'] = 'Sua senha'
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        senha = cleaned_data.get('senha')
 
-        def clean(self):
-            cleaned_data = super().clean()
-            email = cleaned_data.get('email')
-            senha = cleaned_data.get('senha')
+        if email and senha:
+            try:
+                usuario = Usuario.objects.get(email=email)
+                # Verifique a senha criptografada
+                hashed_password = hashlib.sha256(senha.encode('utf-8')).hexdigest()
+                if usuario.senha != hashed_password:
+                    raise forms.ValidationError('Senha incorreta.')
+            except Usuario.DoesNotExist:
+                raise forms.ValidationError('Email não encontrado.')
 
-            if email and senha:
-                try:
-                    user = Usuario.objects.get(email=email)
-                    if not user.check_password(senha):
-                        raise forms.ValidationError('Senha incorreta.')
-                except Usuario.DoesNotExist:
-                    raise forms.ValidationError('Email não encontrado.')
-
-            return cleaned_data
+        return cleaned_data
