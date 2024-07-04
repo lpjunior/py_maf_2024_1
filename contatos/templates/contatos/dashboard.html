@@ -3,14 +3,59 @@
 {% block title %}Dashboard{% endblock %}
 
 {% block content %}
-    <h1>Bem-vind, {{ usuario.nome }}</h1>
-    <a href="{% url 'adicionar_contato' %}" class="btn btn-primary">Adicionar Contato</a>
-    <a href="{% url 'logout' %}" class="btn btn-secondary">Logout</a>
+    <div class="mt-5">
+        <h1 class="display-4">Bem-vindo, {{ usuario.nome }}</h1>
+        <div class="mb-3">
+            {% if usuario.is_admin %}
+                <a href="{% url 'listar_usuarios' %}" class="btn btn-primary btn-sm mr-2">Listar Usuários</a>
+            {% else  %}
+                <a href="{% url 'adicionar_contato' %}" class="btn btn-primary btn-sm mr-2">Adicionar Contato</a>
+            {% endif  %}
+            <a href="{% url 'logout' %}" class="btn btn-secondary btn-sm">Logout</a>
+        </div>
+    </div>
 
+    {% if not usuario.is_admin %}
     <h2>Meus Contatos</h2>
-    <ul>
+    <div class="row">
         {% for contato in contatos %}
-            <li>{{ contato.nome }} - {{ contato.telefone }} - {{ contato.email }} - {{ contato.endereco }}</li>
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <img src="https://robohash.org/{{ contato.email }}?gravatar=yes" class="card-img-top" alt="foto de {{ contato.nome }}">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ contato.nome }}</h5>
+                        <p class="card-text">{{ contato.telefone }}<br>{{ contato.email }}</p>
+                        <button type="button" class="btn btn-dark btn-sm" data-bs-toggle="modal" data-bs-target="#modal{{ contato.id }}">Endereço</button>
+                        <a href="{% url 'editar_contato' contato.id %}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{% url 'excluir_contato' contato.id %}" class="btn btn-danger btn-sm">Excluir</a>
+                    </div>
+                </div>
+                
+                <!-- modal -->
+                <div class="modal fade" id="modal{{ contato.id }}" tabindex="-1" role="dialog" aria-labelledby="modalLabel{{ contato.id }}" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" aria-labelledby="modalLabel{{ contato.id }}">Endereço de {{ contato.nome }}</h5>
+                                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <p><strong>Logradouro: </strong>{{ contato.logradouro }}</p>
+                                <p><strong>Bairro: </strong>{{ contato.bairro }}</p>
+                                <p><strong>Cidade: </strong>{{ contato.cidade }}</p>
+                                <p><strong>Uf: </strong>{{ contato.uf }}</p>
+                                <p><strong>CEP: </strong>{{ contato.cep }}</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         {% endfor %}
-    </ul>
+    </div>
+    {% endif %}
 {% endblock %}

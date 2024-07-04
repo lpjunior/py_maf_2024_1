@@ -3,10 +3,29 @@
 {% block title %}Listagem de Usuários{% endblock %}
 
 {% block content %}
-    <h1>Listagem de Usuários</h1>
-    <ul>
-        {% for usuario in usuarios %}
-        <li>{{ usuario.nome }} - {{ usuario.num_contatos }} contatos</li>
-        {% endfor %}
-    </ul>
+<div class="mt-5">
+    <h1 class="display-4">Listagem de Usuários</h1>
+    <div class="mb-3">
+        <a href="{% url 'dashboard' %}" class="btn btn-primary mr-2">Dashboard</a>
+        <a href="{% url 'logout' %}" class="btn btn-secondary">Logout</a>
+    </div>
+</div>
+<ul class="list-group mt-3">
+    {% for usuario in usuarios %}
+    <li class="list-group-item">
+        <div>
+            <h5 class="mb-1">{{ usuario.nome }}</h5>
+            <p class="mb-0"><strong>Contatos:</strong> {{ usuario.num_contatos }}</p>
+        </div>
+        <div class="mb-3 mt-2">
+            {% if usuario.is_active %}
+                <a href="{% url 'desativar_usuario' usuario.id %}" class="btn btn-secondary btn-sm mr-2">Desativar</a>
+            {% else %}
+                <a href="{% url 'reativar_usuario' usuario.id %}" class="btn btn-success btn-sm mr-2">Reativar</a>
+            {% endif %}
+            <a href="{% url 'excluir_usuario' usuario.id %}" class="btn btn-danger btn-sm">Excluir</a>
+        </div>
+    </li>
+    {% endfor %}
+</ul>
 {% endblock %}

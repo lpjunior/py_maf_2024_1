@@ -26,10 +26,10 @@ class UsuarioForm(BootstrapModelForm):
 class ContatoForm(BootstrapModelForm):
     class Meta:
         model = Contato
-        fields = ['nome', 'email', 'telefone', 'endereco']
+        fields = ['nome', 'email', 'telefone', 'logradouro', 'bairro', 'cidade', 'uf', 'cep']
         widgets = {
-            'telefone': forms.TextInput(attrs={'data-mask': '(0000000000000'}),
-            'endereco': forms.Textarea(attrs={'rows': 3}),
+            'telefone': forms.TextInput(attrs={'data-mask': '(00) 00000-0000'}),
+            'cep': forms.TextInput(attrs={'data-mask': '00000-0000'}),
         }
 
 
