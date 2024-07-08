@@ -18,6 +18,10 @@
     {% if not usuario.is_admin %}
     <h2>Meus Contatos</h2>
     <div class="row">
+        <form class="mb-3">
+            <input type="text" name="q" placeholder="Buscar por nome, email, bairro, cidade ou estado" class="form-control mb-2">
+            <button type="submit" class="btn btn-dark">Buscar</button>
+        </form>
         {% for contato in contatos %}
             <div class="col-md-4">
                 <div class="card mb-4">

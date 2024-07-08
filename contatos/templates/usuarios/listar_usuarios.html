@@ -1,21 +1,35 @@
 ﻿{% extends 'base.html' %}
 
-{% block title %}Listagem de Usuários{% endblock %}
+{% block title %}Administração de Usuários{% endblock %}
 
 {% block content %}
 <div class="mt-5">
-    <h1 class="display-4">Listagem de Usuários</h1>
+    <h1 class="display-4">Administração de Usuários</h1>
     <div class="mb-3">
         <a href="{% url 'dashboard' %}" class="btn btn-primary mr-2">Dashboard</a>
         <a href="{% url 'logout' %}" class="btn btn-secondary">Logout</a>
     </div>
+    <form class="mb-3">
+        <input type="text" name="q" placeholder="Buscar por nome ou email" class="form-control mb-2">
+        <input type="number" name="idade" min="0" max="200" placeholder="Buscar por idade aproximada" class="form-control mb-2">
+        <select name="status" class="form-control mb-2">
+            <option value="">Todos</option>
+            <option value="ativo">Ativo</option>
+            <option value="inativo">Inativo</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
 </div>
 <ul class="list-group mt-3">
     {% for usuario in usuarios %}
     <li class="list-group-item">
         <div>
             <h5 class="mb-1">{{ usuario.nome }}</h5>
+            {% if usuario.num_contatos %}
             <p class="mb-0"><strong>Contatos:</strong> {{ usuario.num_contatos }}</p>
+            {% else %}
+            <p class="mb-0">Nenhum contato cadastrado.</p>
+            {% endif %}
         </div>
         <div class="mb-3 mt-2">
             {% if usuario.is_active %}

@@ -2,7 +2,7 @@ import hashlib
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Usuario, Contato
 from .forms import UsuarioForm, ContatoForm, LoginForm
-from django.db.models import Count
+from django.db.models import Count, Q
 
 from django.contrib.auth.decorators import user_passes_test, login_required
 
@@ -23,7 +23,30 @@ def listar_usuarios(request):
     if usuario_id:
         usuario = Usuario.objects.get(id=usuario_id)
         if usuario.is_admin:
-            usuarios = Usuario.objects.filter(is_admin=False).annotate(num_contatos=Count('contatos'))
+            query = request.GET.get('q')
+            status = request.GET.get('status')
+            idade = request.GET.get('idade')
+            usuarios = Usuario.objects.all()
+
+            if query:
+                usuarios = usuarios.filter(Q(nome__icontains=query) | Q(email__icontains=query))
+
+            if status:
+                is_active = True if status == 'ativo' else False
+                usuarios = usuarios.filter(is_active=is_active)
+
+            if idade:
+                try:
+                    idade = int(idade)
+                    faixa_min = idade - 3
+                    faixa_max = idade + 3
+                    usuarios = usuarios.filter(idade__range=(faixa_min, faixa_max))
+                    #  __gte(greater than or equal to): ele seleciona registros onde o valor do campo é maior ou igual a um valor especificado.
+                    #  --range: ele seleciona registros onde o valor do campo estra dentro de um intervalo especificado.
+                except ValueError:
+                    pass  # Se a idade nõ for um número, ignorar este filtro.
+
+            usuarios = usuarios.filter(is_admin=False).annotate(contatos_count=Count('contatos'))
             return render(request, 'usuarios/listar_usuarios.html', {'usuarios': usuarios})
         else:
             messages.error(request, 'Você não tem permissão para acessar essa página.')
@@ -190,8 +213,19 @@ def excluir_contato(request, contato_id):
 def dashboard(request):
     usuario_id = request.session.get('usuario_id')
     if usuario_id:
+        query = request.GET.get('q')
         usuario = Usuario.objects.get(id=usuario_id)
         contatos = Contato.objects.filter(usuario=usuario)
+
+        if query:
+            contatos = contatos.filter(
+                Q(nome__icontains=query) |
+                Q(email__icontains=query) |
+                Q(bairro__icontains=query) |
+                Q(cidade__icontains=query) |
+                Q(uf__icontains=query)
+            )
+
         return render(request, 'contatos/dashboard.html', {'usuario': usuario, 'contatos': contatos})
     else:
         return redirect('login')
@@ -200,3 +234,9 @@ def dashboard(request):
 def logout(request):
     request.session.flush()
     return redirect('login')
+
+
+def MudarSenha(request):
+    usuario_id = request.session.get('usuario_id')
+    usuario = Usuario.objects.get(id=usuario_id)
+    return render(request, 'usuarios/mudar_senha.html', {'usuario': usuario})

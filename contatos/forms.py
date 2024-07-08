@@ -1,7 +1,7 @@
 import hashlib
 
 from django import forms
-from django.contrib.auth.hashers import check_password
+# from django.contrib.auth.hashers import check_password
 
 from contatos.models import Usuario, Contato
 
@@ -55,5 +55,28 @@ class LoginForm(forms.Form):
                     raise forms.ValidationError('Senha incorreta.')
             except Usuario.DoesNotExist:
                 raise forms.ValidationError('Email não encontrado.')
+
+        return cleaned_data
+
+
+class MudarSenhaForm(forms.Form):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control', 'placeholder': 'Sua senha atual'
+    }))
+    new_password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control', 'placeholder': 'Nova senha'
+    }))
+    confirm_password = forms.CharField(widget=forms.PasswordInput(attrs={
+        'class': 'form-control', 'placeholder': 'Confirme a nova senha'
+    }))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        old_password = cleaned_data.get('old_password')
+        new_password = cleaned_data.get('new_password')
+        confirm_password = cleaned_data.get('confirm_password')
+
+        if new_password and confirm_password and new_password != confirm_password:
+            raise forms.ValidationError('As novas senhas não coincidem.')
 
         return cleaned_data
