@@ -1,14 +1,49 @@
 import hashlib
+
+from django.contrib.auth.tokens import default_token_generator
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Usuario, Contato
-from .forms import UsuarioForm, ContatoForm, LoginForm
+from .forms import UsuarioForm, ContatoForm, LoginForm, PasswordChangeForm
 from django.db.models import Count, Q
+from django.utils.encoding import force_str
 
 from django.contrib.auth.decorators import user_passes_test, login_required
 
 from django.contrib.auth import authenticate, login as auth_login
 
 from django.contrib import messages
+
+from django.core.mail import send_mail
+
+from django.contrib.sites.shortcuts import get_current_site
+
+from django.utils.encoding import force_bytes
+
+from django.template.loader import render_to_string
+
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+from .token_utils import generate_token
+
+
+def resend_activation_email(request, usuario_id):
+    usuario = Usuario.objects.get(id=usuario_id)
+    if usuario:
+        send_activation_email(request, usuario)
+        return True
+
+
+def send_activation_email(request, usuario):
+    token = generate_token(usuario.pk)
+    current_site = get_current_site(request)
+    mail_subject = 'Ative sua conta'
+    message = render_to_string('usuarios/activation_email.html', {
+        'user': usuario,
+        'domain': current_site.domain,
+        'uid': urlsafe_base64_encode(force_bytes(usuario)),
+        'token': token,
+    })
+    send_mail(mail_subject, message, 'aula.sendmail@gmail.com', [usuario.email], fail_silently=False)
 
 
 # views para admin
@@ -41,10 +76,11 @@ def listar_usuarios(request):
                     faixa_min = idade - 3
                     faixa_max = idade + 3
                     usuarios = usuarios.filter(idade__range=(faixa_min, faixa_max))
+
                     #  __gte(greater than or equal to): ele seleciona registros onde o valor do campo é maior ou igual a um valor especificado.
                     #  --range: ele seleciona registros onde o valor do campo estra dentro de um intervalo especificado.
                 except ValueError:
-                    pass  # Se a idade nõ for um número, ignorar este filtro.
+                    pass  # Se a idade não for um número, ignorar este filtro.
 
             usuarios = usuarios.filter(is_admin=False).annotate(contatos_count=Count('contatos'))
             return render(request, 'usuarios/listar_usuarios.html', {'usuarios': usuarios})
@@ -127,12 +163,31 @@ def adicionar_usuario(request):
             usuario = form.save(commit=False)
             usuario.senha = hashlib.sha256(usuario.senha.encode('utf-8')).hexdigest()
             usuario.save()
+            send_activation_email(request, usuario)
+            messages.success(request, 'Por favor, verifique seu email para ativar sua conta.')
             return redirect('login')
         else:
             return render(request, 'usuarios/adicionar_usuario.html', {'form': form})
     else:
         form = UsuarioForm()
     return render(request, 'usuarios/adicionar_usuario.html', {'form': form})
+
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = Usuario.objects.defer('senha').get(pk=uid)
+    except (TypeError, ValueError, OverflowError, Usuario.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        messages.success(request, 'Conta ativada com sucesso. Você pode agora fazer login.')
+        return redirect('login')
+    else:
+        messages.error(request, 'Link de ativação inválido.')
+        return redirect('registro')
 
 
 def login(request):
@@ -144,7 +199,7 @@ def login(request):
             hashed_password = hashlib.sha256(senha.encode('utf-8')).hexdigest()
 
             try:
-                usuario = Usuario.objects.get(email=email, senha=hashed_password)
+                usuario = Usuario.objects.only('id', 'is_active').get(email=email, senha=hashed_password)
                 # usuario = authenticate(request, username=email, password=hashed_password)
                 if usuario is not None:
                     if usuario.is_active:
@@ -214,7 +269,8 @@ def dashboard(request):
     usuario_id = request.session.get('usuario_id')
     if usuario_id:
         query = request.GET.get('q')
-        usuario = Usuario.objects.get(id=usuario_id)
+        usuario = Usuario.objects.defer('senha').get(
+            id=usuario_id)  # defer() carrega todos os campos do modelo, exceto o(s) especificado(s)
         contatos = Contato.objects.filter(usuario=usuario)
 
         if query:
@@ -236,7 +292,36 @@ def logout(request):
     return redirect('login')
 
 
-def MudarSenha(request):
+def change_password(request):
     usuario_id = request.session.get('usuario_id')
-    usuario = Usuario.objects.get(id=usuario_id)
-    return render(request, 'usuarios/mudar_senha.html', {'usuario': usuario})
+    if usuario_id:
+        usuario = Usuario.objects.only('email').get(id=usuario_id)  # 'only()' carrega apenas o(s) campo(s) 
+        # especificado(s)
+        if request.method == 'POST':
+            form = PasswordChangeForm(request.POST)
+            try:
+                if form.is_valid():
+                    old_password = form.cleaned_data['old_password']
+                    new_password = form.cleaned_data['new_password']
+                    confirm_password = form.cleaned_data['confirm_password']
+
+                    hashed_old_password = hashlib.sha256(old_password.encode('utf-8')).hexdigest()
+                    hashed_new_password = hashlib.sha256(new_password.encode('utf-8')).hexdigest()
+
+                    if usuario.senha == hashed_old_password:
+                        if new_password == confirm_password:
+                            usuario.senha = hashed_new_password
+                            usuario.save()
+                            messages.success(request, 'Senha alterada com sucesso!')
+                            return redirect('dashboard')
+                        else:
+                            form.add_error(None, 'As senhas não coincidem.')
+                    else:
+                        form.add_error(None, 'Senha atual incorreta.')
+            except form.ValidationError:
+                form.add_error(None, 'Corrija os erros.')
+        else:
+            form = PasswordChangeForm()
+        return render(request, 'usuarios/change_password.html', {'form': form})
+    else:
+        return redirect('login')

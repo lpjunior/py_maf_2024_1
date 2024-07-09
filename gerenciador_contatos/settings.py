@@ -31,6 +31,15 @@ AUTH_USER_MODEL = 'contatos.Usuario'
 LOGIN_URL = '/contatos/login/'
 LOGIN_REDIRECT_URL = '/contatos/dashboard/'
 
+# Email Definitions
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'aula.sendmail@gmail.com'
+EMAIL_HOST_PASSWORD = 'jtkl ncnk rkcc cbye'
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'agenda.contato.senac@gmail.com'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+
 # Application definition
 
 INSTALLED_APPS = [

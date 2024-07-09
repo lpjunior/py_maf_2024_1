@@ -59,7 +59,7 @@ class LoginForm(forms.Form):
         return cleaned_data
 
 
-class MudarSenhaForm(forms.Form):
+class PasswordChangeForm(forms.Form):
     old_password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': 'Sua senha atual'
     }))
@@ -77,6 +77,11 @@ class MudarSenhaForm(forms.Form):
         confirm_password = cleaned_data.get('confirm_password')
 
         if new_password and confirm_password and new_password != confirm_password:
-            raise forms.ValidationError('As novas senhas não coincidem.')
+            print('Confirmação de senha inválida')
+            raise forms.ValidationError('Confirmação de senha inválida.')
+
+        if new_password and old_password and new_password == old_password:
+            print('A nova senha não pode ser igual à antiga.')
+            raise forms.ValidationError('A nova senha não pode ser igual à antiga.')
 
         return cleaned_data

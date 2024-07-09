@@ -36,6 +36,7 @@
                 <a href="{% url 'desativar_usuario' usuario.id %}" class="btn btn-secondary btn-sm mr-2">Desativar</a>
             {% else %}
                 <a href="{% url 'reativar_usuario' usuario.id %}" class="btn btn-success btn-sm mr-2">Reativar</a>
+                <a href="{% url 'resend_activation_email' usuario.id %}" class="btn btn-secondary btn-sm mr-2">Reenviar E-mail de ativação</a>
             {% endif %}
             <a href="{% url 'excluir_usuario' usuario.id %}" class="btn btn-danger btn-sm">Excluir</a>
         </div>
