@@ -16,7 +16,47 @@
         </div>
     </div>
 
-    {% if not usuario.is_admin %}
+    {% if usuario.is_admin %}
+    <h2>Dashboard Administrativa</h2>
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card text-white bg-primary mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Total de Usuários</h5>
+                    <p class="card-text">{{ total_usuarios }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-success mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Usuários Ativos</h5>
+                    <p class="card-text">{{ usuarios_ativos }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-white bg-danger mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Usuários Inativos</h5>
+                    <p class="card-text">{{ usuarios_inativos }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card mb-4 offset-4" style="width: 18rem;">
+        <div class="card-header text-white bg-info">
+            Últimos 5 Usuários Adicionados
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for usuario in ultimos_usuarios %}
+            <li class="list-group-item">
+                <strong>{{ usuario.nome }}</strong> - {{ usuario.email }}
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% else %}
     <h2>Meus Contatos</h2>
     <div class="row">
         <form class="mb-3">
@@ -26,7 +66,11 @@
         {% for contato in contatos %}
             <div class="col-md-4">
                 <div class="card mb-4">
-                    <img src="https://robohash.org/{{ contato.email }}?gravatar=yes" class="card-img-top" alt="foto de {{ contato.nome }}">
+                    {% if contato.foto_base64 %}
+                        <img src="data:image/png;base64,{{ contato.foto_base64 }}" class="card-img-top" alt="foto de {{ contato.nome }}">
+                    {% else %}
+                        <img src="https://robohash.org/{{ contato.email }}?gravatar=yes" class="card-img-top" alt="foto de {{ contato.nome }}">
+                    {% endif %}
                     <div class="card-body">
                         <h5 class="card-title">{{ contato.nome }}</h5>
                         <p class="card-text">{{ contato.telefone }}<br>{{ contato.email }}</p>
@@ -64,3 +108,6 @@
     </div>
     {% endif %}
 {% endblock %}
+
+
+

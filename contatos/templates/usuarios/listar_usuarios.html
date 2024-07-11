@@ -25,8 +25,8 @@
     <li class="list-group-item">
         <div>
             <h5 class="mb-1">{{ usuario.nome }}</h5>
-            {% if usuario.num_contatos %}
-            <p class="mb-0"><strong>Contatos:</strong> {{ usuario.num_contatos }}</p>
+            {% if usuario.contatos_count %}
+            <p class="mb-0"><strong>Contatos:</strong> {{ usuario.contatos_count }}</p>
             {% else %}
             <p class="mb-0">Nenhum contato cadastrado.</p>
             {% endif %}

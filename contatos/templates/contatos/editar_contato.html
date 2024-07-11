@@ -5,7 +5,7 @@
 {% block content %}
 <div class="mt-5">
     <h1 class="display-4">Editar Contato</h1>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {% for field in form %}
         <div class="form-group">

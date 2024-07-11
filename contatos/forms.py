@@ -24,9 +24,14 @@ class UsuarioForm(BootstrapModelForm):
 
 
 class ContatoForm(BootstrapModelForm):
+    foto = forms.ImageField(required=False, widget=forms.FileInput(attrs={
+        'class': 'form-control',
+        'accept': 'image/*',
+    }))
+
     class Meta:
         model = Contato
-        fields = ['nome', 'email', 'telefone', 'logradouro', 'bairro', 'cidade', 'uf', 'cep']
+        fields = ['nome', 'email', 'telefone', 'logradouro', 'bairro', 'cidade', 'uf', 'cep', 'foto']
         widgets = {
             'telefone': forms.TextInput(attrs={'data-mask': '(00) 00000-0000'}),
             'cep': forms.TextInput(attrs={'data-mask': '00000-0000'}),
@@ -51,7 +56,7 @@ class LoginForm(forms.Form):
                 usuario = Usuario.objects.get(email=email)
                 # Verifique a senha criptografada
                 hashed_password = hashlib.sha256(senha.encode('utf-8')).hexdigest()
-                if usuario.senha != hashed_password:
+                if usuario.password != hashed_password:
                     raise forms.ValidationError('Senha incorreta.')
             except Usuario.DoesNotExist:
                 raise forms.ValidationError('Email não encontrado.')
