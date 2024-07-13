@@ -1,7 +1,5 @@
-import hashlib
-
 from django import forms
-# from django.contrib.auth.hashers import check_password
+from django.contrib.auth import authenticate
 
 from contatos.models import Usuario, Contato
 
@@ -17,10 +15,17 @@ class BootstrapModelForm(forms.ModelForm):
 class UsuarioForm(BootstrapModelForm):
     class Meta:
         model = Usuario
-        fields = ['nome', 'idade', 'email', 'senha']
+        fields = ['nome', 'idade', 'email', 'password']
         widgets = {
-            'senha': forms.PasswordInput(),
+            'password': forms.PasswordInput(),
         }
+
+    def save(self, commit=True):
+        usuario = super().save(commit=False)
+        usuario.set_password(self.cleaned_data['password'])
+        if commit:
+            usuario.save()
+        return usuario
 
 
 class ContatoForm(BootstrapModelForm):
@@ -42,22 +47,20 @@ class LoginForm(forms.Form):
     email = forms.EmailField(widget=forms.EmailInput(attrs={
         'class': 'form-control', 'placeholder': 'exemplo@dominio.com'
     }))
-    senha = forms.CharField(widget=forms.PasswordInput(attrs={
+    password = forms.CharField(widget=forms.PasswordInput(attrs={
         'class': 'form-control', 'placeholder': 'Sua senha'
     }))
 
     def clean(self):
         cleaned_data = super().clean()
         email = cleaned_data.get('email')
-        senha = cleaned_data.get('senha')
+        password = cleaned_data.get('password')
 
-        if email and senha:
+        if email and password:
             try:
-                usuario = Usuario.objects.get(email=email)
-                # Verifique a senha criptografada
-                hashed_password = hashlib.sha256(senha.encode('utf-8')).hexdigest()
-                if usuario.password != hashed_password:
-                    raise forms.ValidationError('Senha incorreta.')
+                usuario = authenticate(username=email, password=password)
+                if usuario is None:
+                    raise forms.ValidationError('Email ou senha incorretos ou usuário inativo.')
             except Usuario.DoesNotExist:
                 raise forms.ValidationError('Email não encontrado.')
 

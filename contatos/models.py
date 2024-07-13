@@ -6,10 +6,10 @@ import base64
 class UsuarioManager(BaseUserManager):
     def create_user(self, email, nome, idade, password=None, is_admin=False, is_active=False):
         if not email:
-            raise ValueError('from campo email é obrigatório')
+            raise ValueError('O campo email é obrigatório')
 
         if not nome:
-            raise ValueError('from campo nome é obrigatório')
+            raise ValueError('O campo nome é obrigatório')
 
         user = self.model(
             email=self.normalize_email(email),
@@ -36,28 +36,19 @@ class UsuarioManager(BaseUserManager):
         return user
 
 
-def has_perm(perm, obj=None):
-    return True
-
-
-def has_module_perms(app_label):
-    return True
-
-
 class Usuario(AbstractBaseUser):
     nome = models.CharField(max_length=100)
     idade = models.IntegerField()
     email = models.EmailField(unique=True)
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
-    token = models.CharField(max_length=255, default='', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     objects = UsuarioManager()
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['nome', 'idade', 'senha']
+    REQUIRED_FIELDS = ['nome', 'idade', 'password']
 
     class Meta:
         verbose_name_plural = 'usuarios'
