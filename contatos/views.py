@@ -1,24 +1,24 @@
 import base64
 import io
-from PIL import Image
-from django.contrib.auth.decorators import login_required, user_passes_test
-from django.contrib.auth.tokens import default_token_generator
-from django.shortcuts import render, redirect, get_object_or_404
 
-from .management.decorators.custom_decorators import admin_required_custom, login_required_custom, \
-    redirect_authenticated_user
-from .models import Usuario, Contato
-from .forms import UsuarioForm, ContatoForm, LoginForm, PasswordChangeForm
-from django.db.models import Count, Q
-from django.utils.encoding import force_str
+from PIL import Image
 from django.contrib import messages
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib.auth import logout as auth_logout
-from django.core.mail import send_mail
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.sites.shortcuts import get_current_site
-from django.utils.encoding import force_bytes
+from django.core.mail import send_mail
+from django.db.models import Count, Q
+from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
+from .forms import UsuarioForm, ContatoForm, LoginForm, PasswordChangeForm
+from .management.decorators.custom_decorators import admin_required_custom, login_required_custom, \
+    redirect_authenticated_user
+from .models import Usuario, Contato
 
 
 # Funções de utilidade
@@ -66,9 +66,7 @@ def listar_usuarios(request):
     return render(request, 'usuarios/listar_usuarios.html', {'usuarios': usuarios})
 
 
-admin_required_custom
-
-
+@admin_required_custom
 def desativar_usuario(request, usuario_id):
     try:
         usuario = get_object_or_404(Usuario, id=usuario_id)
@@ -80,9 +78,7 @@ def desativar_usuario(request, usuario_id):
     return redirect('listar_usuarios')
 
 
-admin_required_custom
-
-
+@admin_required_custom
 def reativar_usuario(request, usuario_id):
     try:
         usuario = get_object_or_404(Usuario, id=usuario_id)
@@ -94,9 +90,7 @@ def reativar_usuario(request, usuario_id):
     return redirect('listar_usuarios')
 
 
-admin_required_custom
-
-
+@admin_required_custom
 def excluir_usuario(request, usuario_id):
     try:
         usuario = get_object_or_404(Usuario, id=usuario_id)
@@ -177,7 +171,7 @@ def login(request):
     return render(request, 'usuarios/login.html', {'form': form})
 
 
-@login_required_custom # decorador de funções
+@login_required_custom  # decorador de funções
 def dashboard(request):
     query = request.GET.get('q')
     usuario = Usuario.objects.defer('password').get(

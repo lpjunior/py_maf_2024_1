@@ -3,10 +3,9 @@ from contatos.models import Usuario
 
 
 class Command(BaseCommand):
-    help = "Cria um superusuário se não existe ainda"
+    help = 'Cria um superusuário se não existir'
 
     def handle(self, *args, **options):
-
         if not Usuario.objects.filter(is_admin=True).exists():
             Usuario.objects.create_superuser(
                 nome='Admin',
@@ -16,4 +15,4 @@ class Command(BaseCommand):
             )
             self.stdout.write(self.style.SUCCESS('Superusuário criado com sucesso.'))
         else:
-            self.stdout.write(self.style.WARNING('Já existe um superusuário.'))
+            self.stdout.write(self.style.SUCCESS('Já existe um superusuário.'))
